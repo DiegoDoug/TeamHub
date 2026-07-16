@@ -52,8 +52,14 @@ create policy profiles_update_self on public.profiles for update
 -- ---------------------------------------------------------------------
 -- teams
 -- ---------------------------------------------------------------------
+-- `created_by = auth.uid()` (not just app_is_team_member) matters here:
+-- PostgREST's INSERT ... RETURNING evaluates this SELECT policy against the
+-- new row before the on_team_created trigger (which grants head_coach
+-- membership) has run, since RETURNING is projected per-row before AFTER
+-- triggers fire — without this clause the creator's own "create team"
+-- request would 42501 on the RETURNING step despite the insert being valid.
 create policy teams_select on public.teams for select
-  using (public.app_is_team_member(id));
+  using (created_by = auth.uid() or public.app_is_team_member(id));
 
 -- Any authenticated user may create a team (they become its head_coach via
 -- trigger). created_by must be themselves.
