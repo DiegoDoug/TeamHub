@@ -44,8 +44,12 @@ export function LogForm({
     logWorkout,
     null,
   );
-  const [workoutType, setWorkoutType] = useState<WorkoutType | undefined>(
-    defaultWorkoutType,
+  // Controlled from the very first render (never `undefined`) — Base UI
+  // warns if a Select's `value` switches between uncontrolled and
+  // controlled across renders, which an initial `undefined` here would do
+  // as soon as the user picks a type.
+  const [workoutType, setWorkoutType] = useState<WorkoutType | "">(
+    defaultWorkoutType ?? "",
   );
   const [exercises, setExercises] = useState<ExerciseRow[]>([emptyExercise()]);
 
@@ -87,7 +91,7 @@ export function LogForm({
           name="workout_type"
           required
           value={workoutType}
-          onValueChange={(value) => setWorkoutType(value as WorkoutType)}
+          onValueChange={(value) => setWorkoutType((value as WorkoutType) ?? "")}
         >
           <SelectTrigger id="workout_type" className="w-full">
             <SelectValue placeholder="Select a type" />
