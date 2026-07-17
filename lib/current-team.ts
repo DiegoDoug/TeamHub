@@ -14,9 +14,20 @@ export type CurrentTeam = {
 // only surfaces one team context at a time.
 export async function getCurrentTeam(): Promise<CurrentTeam | null> {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  // profiles_select's RLS is team-wide (anyone can see their teammates'
+  // rows), so this MUST filter to the caller's own membership row —
+  // without `.eq("profile_id", ...)` it silently returns whichever
+  // teammate's row happens to be oldest (almost always the head_coach who
+  // created the team), handing every other member the head_coach's role.
   const { data } = await supabase
     .from("team_members")
     .select("team_id, role, teams(name)")
+    .eq("profile_id", user.id)
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
