@@ -260,8 +260,16 @@ services:
     ports:
       - "${WEB_PORT:-3000}:3000"
     environment:
+      # Browser-facing URL — baked into the client bundle at build time too
+      # (see the build.args above), must be reachable from the host.
       NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_PUBLIC_URL:-http://localhost:8000}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
+      # Server-side-only URL for middleware/Server Components/Server Actions
+      # running inside this container — "localhost" there means the web
+      # container itself, not Kong, so it needs the Docker service name.
+      # lib/supabase/server.ts and lib/supabase/middleware.ts prefer this
+      # over NEXT_PUBLIC_SUPABASE_URL when it's set.
+      SUPABASE_URL: http://kong:8000
       SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
       NODE_ENV: production
 

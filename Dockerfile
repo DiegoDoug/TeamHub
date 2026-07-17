@@ -3,7 +3,12 @@ FROM node:22-alpine AS base
 FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+# `npm ci` requires the lockfile to list every platform-specific optional
+# dependency (e.g. lightningcss's native/wasm variants) for the CURRENT
+# platform — a lockfile committed from a Windows host is missing the
+# Linux ones `npm ci` wants inside this container. `npm install` resolves
+# and adds those instead of hard-failing.
+RUN npm install
 
 FROM base AS builder
 WORKDIR /app
