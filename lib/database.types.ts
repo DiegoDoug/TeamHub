@@ -519,6 +519,13 @@ export type Database = {
       app_shares_team_with: { Args: { p_profile_id: string }; Returns: boolean }
       app_team_role: { Args: { p_team_id: string }; Returns: string }
       app_week_group_id: { Args: { p_week_id: string }; Returns: string }
+      lookup_profile_by_email: {
+        Args: { p_email: string }
+        Returns: {
+          full_name: string
+          id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

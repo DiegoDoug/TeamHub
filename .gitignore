@@ -14,8 +14,12 @@ out/
 next-env.d.ts
 tsconfig.tsbuildinfo
 
-# Supabase local data (persisted volumes)
+# Supabase local data (persisted volumes) and CLI scratch state
 supabase/db/data/
+supabase/.temp/
+
+# Claude Code local scratch state
+.claude/
 
 # Testing
 /test-results/
