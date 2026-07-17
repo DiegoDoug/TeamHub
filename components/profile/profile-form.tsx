@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useId, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,7 @@ export function ProfileForm({
     UpdateProfileValues
   >(boundUpdateProfile, null);
 
+  const uid = useId();
   const [fullName, setFullName] = useState(profile.full_name);
   const [primaryEvents, setPrimaryEvents] = useState(profile.primary_events);
   const [prs, setPrs] = useState<PrEntry[]>(profile.prs);
@@ -115,24 +116,42 @@ export function ProfileForm({
               className="grid grid-cols-[1fr_1fr_1fr_auto] items-end gap-2"
             >
               <div className="space-y-1">
-                {i === 0 && <Label className="text-xs">Event</Label>}
+                {i === 0 && (
+                  <Label htmlFor={`${uid}-event-${i}`} className="text-xs">
+                    Event
+                  </Label>
+                )}
                 <Input
+                  id={`${uid}-event-${i}`}
+                  aria-label={i === 0 ? undefined : "Event"}
                   value={pr.event}
                   onChange={(e) => updateRow(i, { event: e.target.value })}
                   placeholder="100m"
                 />
               </div>
               <div className="space-y-1">
-                {i === 0 && <Label className="text-xs">Mark</Label>}
+                {i === 0 && (
+                  <Label htmlFor={`${uid}-mark-${i}`} className="text-xs">
+                    Mark
+                  </Label>
+                )}
                 <Input
+                  id={`${uid}-mark-${i}`}
+                  aria-label={i === 0 ? undefined : "Mark"}
                   value={pr.mark}
                   onChange={(e) => updateRow(i, { mark: e.target.value })}
                   placeholder="10.9"
                 />
               </div>
               <div className="space-y-1">
-                {i === 0 && <Label className="text-xs">Date (optional)</Label>}
+                {i === 0 && (
+                  <Label htmlFor={`${uid}-date-${i}`} className="text-xs">
+                    Date (optional)
+                  </Label>
+                )}
                 <Input
+                  id={`${uid}-date-${i}`}
+                  aria-label={i === 0 ? undefined : "Date"}
                   type="date"
                   value={pr.date ?? ""}
                   onChange={(e) => updateRow(i, { date: e.target.value })}

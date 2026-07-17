@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { CreateTeamForm } from "@/components/onboarding/create-team-form";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import {
   Card,
   CardContent,
@@ -35,10 +36,15 @@ export default async function OnboardingPage() {
     <div className="flex min-h-svh items-center justify-center p-6">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-xl">Welcome to TrackHub</CardTitle>
-          <CardDescription>
-            Start a new team, or wait for your head coach to add you by email.
-          </CardDescription>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <CardTitle className="text-xl">Welcome to TrackHub</CardTitle>
+              <CardDescription>
+                Start a new team, or wait for your head coach to add you by email.
+              </CardDescription>
+            </div>
+            <SignOutButton />
+          </div>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="create">
