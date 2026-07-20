@@ -214,7 +214,15 @@ export function EventFormDialog({
           {error && <p className="text-sm text-destructive">{error}</p>}
 
           <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>
+            <DialogClose
+              render={
+                <Button
+                  type="button"
+                  data-slot="dialog-close"
+                  variant="outline"
+                />
+              }
+            >
               Cancel
             </DialogClose>
             <Button type="submit" disabled={pending}>

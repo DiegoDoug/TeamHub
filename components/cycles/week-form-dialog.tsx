@@ -70,12 +70,18 @@ export function WeekFormDialog({
       <DialogTrigger
         render={
           mode === "create" ? (
-            <Button size="sm">
+            <Button data-slot="dialog-trigger" size="sm">
               <PlusIcon />
               Add week
             </Button>
           ) : (
-            <Button type="button" variant="ghost" size="icon-sm" aria-label="Edit week">
+            <Button
+              type="button"
+              data-slot="dialog-trigger"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Edit week"
+            >
               <PencilIcon className="size-4" />
             </Button>
           )

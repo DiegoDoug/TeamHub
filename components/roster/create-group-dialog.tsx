@@ -53,7 +53,9 @@ export function CreateGroupDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button>New group</Button>} />
+      <DialogTrigger
+        render={<Button data-slot="dialog-trigger">New group</Button>}
+      />
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>New event group</DialogTitle>
@@ -84,7 +86,15 @@ export function CreateGroupDialog({
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>
+            <DialogClose
+              render={
+                <Button
+                  type="button"
+                  data-slot="dialog-close"
+                  variant="outline"
+                />
+              }
+            >
               Cancel
             </DialogClose>
             <Button type="submit" disabled={pending}>

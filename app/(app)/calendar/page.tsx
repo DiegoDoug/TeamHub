@@ -13,6 +13,7 @@ import {
   EventList,
   type CalendarEventWithGroup,
 } from "@/components/calendar/event-list";
+import { MonthGrid } from "@/components/calendar/month-grid";
 import type { CalendarEventType } from "@/lib/validation/calendar";
 
 export default async function CalendarPage({
@@ -101,15 +102,17 @@ export default async function CalendarPage({
     };
   });
 
-  const eventsByDate = Object.values(
-    events.reduce<Record<string, { date: string; events: CalendarEventWithGroup[] }>>(
-      (acc, event) => {
-        (acc[event.date] ??= { date: event.date, events: [] }).events.push(event);
-        return acc;
-      },
-      {},
-    ),
-  ).sort((a, b) => a.date.localeCompare(b.date));
+  const eventsByDateMap = events.reduce<Record<string, CalendarEventWithGroup[]>>(
+    (acc, event) => {
+      (acc[event.date] ??= []).push(event);
+      return acc;
+    },
+    {},
+  );
+
+  const eventsByDate = Object.entries(eventsByDateMap)
+    .map(([date, dateEvents]) => ({ date, events: dateEvents }))
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   const isCurrentMonth =
     format(new Date(), "yyyy-MM") === format(monthStart, "yyyy-MM");
@@ -127,7 +130,7 @@ export default async function CalendarPage({
         {canCreate && (
           <EventFormDialog
             trigger={
-              <Button type="button">
+              <Button type="button" data-slot="dialog-trigger">
                 <Plus className="size-4" />
                 New event
               </Button>
@@ -161,11 +164,23 @@ export default async function CalendarPage({
         </Button>
       </div>
 
-      <EventList
-        eventsByDate={eventsByDate}
+      <MonthGrid
+        monthStart={monthStart}
+        monthEnd={monthEnd}
+        eventsByDate={eventsByDateMap}
         groups={editableGroups}
         allowWholeTeam={allowWholeTeam}
+        canCreate={canCreate}
       />
+
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold tracking-tight">Agenda</h2>
+        <EventList
+          eventsByDate={eventsByDate}
+          groups={editableGroups}
+          allowWholeTeam={allowWholeTeam}
+        />
+      </div>
     </div>
   );
 }

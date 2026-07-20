@@ -67,12 +67,18 @@ export function CycleFormDialog({
       <DialogTrigger
         render={
           mode === "create" ? (
-            <Button size="sm">
+            <Button data-slot="dialog-trigger" size="sm">
               <PlusIcon />
               New cycle
             </Button>
           ) : (
-            <Button type="button" variant="ghost" size="icon-sm" aria-label="Edit cycle">
+            <Button
+              type="button"
+              data-slot="dialog-trigger"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Edit cycle"
+            >
               <PencilIcon className="size-4" />
             </Button>
           )
