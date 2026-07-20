@@ -35,18 +35,23 @@ export default async function ChatChannelPage({
   // profile_id -> full_name map covers every sender we'll ever need to
   // display, including for the live Realtime INSERT payloads (which don't
   // carry a joined sender name).
-  const [{ data: messages }, { data: members }] = await Promise.all([
+  const [{ data: messagesDesc }, { data: members }] = await Promise.all([
+    // Most recent 50 first, then reversed below to chronological order for
+    // display — ordering ascending+limit here would instead return the
+    // OLDEST 50 messages ever sent, hiding everything newer once a channel
+    // passes 50 messages.
     supabase
       .from("messages")
       .select("id, content, created_at, sender_id, profiles(full_name)")
       .eq("channel_id", channelId)
-      .order("created_at", { ascending: true })
+      .order("created_at", { ascending: false })
       .limit(50),
     supabase
       .from("team_members")
       .select("profile_id, profiles(full_name)")
       .eq("team_id", team.teamId),
   ]);
+  const messages = messagesDesc ? [...messagesDesc].reverse() : messagesDesc;
 
   const memberNames: Record<string, string> = {};
   for (const m of members ?? []) {
@@ -72,6 +77,7 @@ export default async function ChatChannelPage({
       currentUserId={user.id}
       currentUserName={memberNames[user.id] || "You"}
       initialMessages={initialMessages}
+      initialHasMore={initialMessages.length === 50}
       memberNames={memberNames}
     />
   );

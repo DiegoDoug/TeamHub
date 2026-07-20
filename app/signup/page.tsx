@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { SignUpForm } from "@/components/auth/signup-form";
+import { AuthShell } from "@/components/layout/auth-shell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function SignUpPage() {
   return (
-    <div className="flex min-h-svh items-center justify-center p-6">
+    <AuthShell>
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-xl">Create your TrackHub account</CardTitle>
@@ -19,6 +20,6 @@ export default function SignUpPage() {
           <SignUpForm />
         </CardContent>
       </Card>
-    </div>
+    </AuthShell>
   );
 }

@@ -6,6 +6,7 @@ import { updateMemberRole, removeMember } from "@/lib/actions/roster";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import {
   Select,
   SelectContent,
@@ -51,15 +52,14 @@ export function MemberRow({
     });
   }
 
-  function handleRemove() {
-    startTransition(async () => {
-      try {
-        await removeMember(teamMemberId);
-        toast.success("Member removed");
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Could not remove member");
-      }
-    });
+  async function handleRemove() {
+    try {
+      await removeMember(teamMemberId);
+    } catch (e) {
+      return {
+        error: e instanceof Error ? e.message : "Could not remove member",
+      };
+    }
   }
 
   return (
@@ -96,14 +96,18 @@ export function MemberRow({
       {canManage && (
         <TableCell>
           {!isSelf && (
-            <Button
-              size="sm"
-              variant="ghost"
-              disabled={pending}
-              onClick={handleRemove}
-            >
-              Remove
-            </Button>
+            <ConfirmDialog
+              trigger={
+                <Button size="sm" variant="ghost" disabled={pending}>
+                  Remove
+                </Button>
+              }
+              title={`Remove ${name} from the team?`}
+              description="They'll lose access to team plans, chat, and logs."
+              confirmLabel="Remove"
+              successMessage="Member removed"
+              onConfirm={handleRemove}
+            />
           )}
         </TableCell>
       )}

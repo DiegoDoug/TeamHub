@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { WeekFormDialog } from "@/components/cycles/week-form-dialog";
 import { DeleteButton } from "@/components/cycles/delete-button";
 import { deleteWeek } from "@/lib/actions/cycles";
+import { PageHeader } from "@/components/shared/page-header";
+import { EmptyState } from "@/components/shared/empty-state";
 
 export default async function CycleDetailPage({
   params,
@@ -52,39 +54,40 @@ export default async function CycleDetailPage({
 
   return (
     <div className="space-y-6">
-      <Link
-        href={`/groups/${groupId}/cycles`}
-        className="text-sm text-muted-foreground underline underline-offset-4"
-      >
-        ← Back to cycles
-      </Link>
-
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{cycle.name}</h1>
-          <p className="text-sm text-muted-foreground">
-            {group.name}
-            {cycle.phase ? ` · ${cycle.phase}` : ""}
-          </p>
-        </div>
-        {canManage && (
-          <WeekFormDialog
-            groupId={groupId}
-            cycleId={cycleId}
-            mode="create"
-            nextWeekNumber={nextWeekNumber}
-          />
-        )}
-      </div>
+      <PageHeader
+        breadcrumb={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: group.name, href: `/groups/${groupId}/cycles` },
+          { label: cycle.name },
+        ]}
+        title={cycle.name}
+        description={`${group.name}${cycle.phase ? ` · ${cycle.phase}` : ""}`}
+        actions={
+          canManage && (
+            <WeekFormDialog
+              groupId={groupId}
+              cycleId={cycleId}
+              mode="create"
+              nextWeekNumber={nextWeekNumber}
+            />
+          )
+        }
+      />
 
       {(weeks ?? []).length === 0 && (
-        <p className="text-sm text-muted-foreground">No weeks yet.</p>
+        <EmptyState
+          title="No weeks yet."
+          description={canManage ? "Add a week to start planning." : undefined}
+        />
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {(weeks ?? []).map((week) => (
           <Card key={week.id}>
-            <Link href={`/groups/${groupId}/cycles/${cycleId}/weeks/${week.id}`} className="block">
+            <Link
+              href={`/groups/${groupId}/cycles/${cycleId}/weeks/${week.id}`}
+              className="block rounded-t-xl transition-colors hover:bg-muted/50"
+            >
               <CardHeader>
                 <CardTitle>Week {week.week_number}</CardTitle>
                 {week.focus && <CardDescription>{week.focus}</CardDescription>}
@@ -96,7 +99,7 @@ export default async function CycleDetailPage({
               )}
             </Link>
             {canManage && (
-              <CardFooter className="justify-end gap-1">
+              <CardFooter className="justify-end gap-2">
                 <WeekFormDialog groupId={groupId} cycleId={cycleId} mode="edit" week={week} />
                 <DeleteButton
                   action={deleteWeek.bind(null, week.id, groupId, cycleId)}

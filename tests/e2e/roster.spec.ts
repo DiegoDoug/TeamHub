@@ -24,10 +24,10 @@ test("head coach stands up an event group with a coach and an athlete", async ({
   const groupCard = page.locator('[data-slot="card"]').filter({ hasText: "Sprints" });
   await expect(groupCard.getByText("No athletes yet.")).toBeVisible();
 
-  // Add the athlete to the new group via the group card's picker.
-  await groupCard.getByRole("combobox").click();
-  await page.getByRole("option", { name: "e2e-ath-roster" }).click();
-  await groupCard.getByRole("button", { name: "Add" }).click();
+  // Add the athlete to the new group via the group card's bulk-add picker.
+  await groupCard.getByRole("button", { name: "Add athletes…" }).click();
+  await page.getByRole("checkbox", { name: "e2e-ath-roster" }).click();
+  await page.getByRole("button", { name: "Add 1 athlete" }).click();
   await expect(page.getByText("Athlete added to group")).toBeVisible();
   await expect(groupCard.getByText("e2e-ath-roster")).toBeVisible();
 });

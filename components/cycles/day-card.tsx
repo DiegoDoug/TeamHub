@@ -2,6 +2,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { DayEditorDialog, type Day } from "@/components/cycles/day-editor-dialog";
 import { DeleteButton } from "@/components/cycles/delete-button";
 import { deleteDay } from "@/lib/actions/cycles";
+import { cn } from "@/lib/utils";
 
 const FIELDS = [
   { key: "warmup", label: "Warmup" },
@@ -21,6 +22,7 @@ export function DayCard({
   label,
   day,
   canManage,
+  isToday,
 }: {
   groupId: string;
   cycleId: string;
@@ -29,11 +31,19 @@ export function DayCard({
   label: string;
   day: Day | null;
   canManage: boolean;
+  isToday?: boolean;
 }) {
   return (
-    <Card>
+    <Card className={cn(isToday && "ring-2 ring-primary")}>
       <CardHeader>
-        <CardTitle>{label}</CardTitle>
+        <CardTitle className="flex items-center justify-between gap-2">
+          {label}
+          {isToday && (
+            <span className="rounded bg-primary px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-primary-foreground uppercase">
+              Today
+            </span>
+          )}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         {day ? (
@@ -50,7 +60,7 @@ export function DayCard({
         )}
       </CardContent>
       {canManage && (
-        <CardFooter className="justify-end gap-1">
+        <CardFooter className="justify-end gap-2">
           <DayEditorDialog
             groupId={groupId}
             cycleId={cycleId}

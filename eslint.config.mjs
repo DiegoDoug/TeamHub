@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Agent worktrees under .claude/ are full nested copies of the repo
+    // (each with their own .next build output) — exclude the whole
+    // directory rather than relying on .next/** to match nested paths.
+    ".claude/**",
   ]),
 ]);
 

@@ -1,9 +1,11 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentTeam } from "@/lib/current-team";
 import { DayCard } from "@/components/cycles/day-card";
 import { DAY_LABELS } from "@/lib/validation/cycles";
+import { PageHeader } from "@/components/shared/page-header";
+import { CopyWeekForwardButton } from "@/components/cycles/copy-week-forward-button";
+import { getCurrentWeekForGroup } from "@/lib/queries/cycles";
 
 export default async function WeekDaysPage({
   params,
@@ -17,7 +19,7 @@ export default async function WeekDaysPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: group }, { data: cycle }, { data: week }, { data: days }, team] =
+  const [{ data: group }, { data: cycle }, { data: week }, { data: days }, team, currentWeek] =
     await Promise.all([
       supabase
         .from("event_groups")
@@ -41,6 +43,7 @@ export default async function WeekDaysPage({
         .select("id, day_of_week, warmup, drills, main_work, cooldown, notes")
         .eq("week_id", weekId),
       getCurrentTeam(),
+      getCurrentWeekForGroup(groupId),
     ]);
 
   // Any broken link in the group -> cycle -> week chain (wrong ids, or RLS
@@ -53,24 +56,40 @@ export default async function WeekDaysPage({
       (team.role === "event_coach" && group.event_coach_id === user?.id));
 
   const daysByDow = new Map((days ?? []).map((d) => [d.day_of_week, d]));
+  // Only highlight a "Today" day slot when this is actually the week
+  // containing today — training_days are keyed by day_of_week with no real
+  // date, so without this check every week (past or future) would show a
+  // "Today" badge on whichever slot matches today's weekday.
+  const isViewingCurrentWeek = currentWeek?.weekId === weekId;
+  const todayDow = (new Date().getDay() + 6) % 7; // JS Sun=0..Sat=6 -> Mon=0..Sun=6
 
   return (
     <div className="space-y-6">
-      <Link
-        href={`/groups/${groupId}/cycles/${cycleId}`}
-        className="text-sm text-muted-foreground underline underline-offset-4"
-      >
-        ← Back to weeks
-      </Link>
-
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Week {week.week_number}
-          {week.focus ? ` — ${week.focus}` : ""}
-        </h1>
-        <p className="text-sm text-muted-foreground">{cycle.name}</p>
-        {week.notes && <p className="mt-2 text-sm text-muted-foreground">{week.notes}</p>}
-      </div>
+      <PageHeader
+        breadcrumb={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: group.name, href: `/groups/${groupId}/cycles` },
+          { label: cycle.name, href: `/groups/${groupId}/cycles/${cycleId}` },
+          { label: `Week ${week.week_number}` },
+        ]}
+        title={`Week ${week.week_number}${week.focus ? ` — ${week.focus}` : ""}`}
+        description={
+          <>
+            {cycle.name}
+            {week.notes && <span className="block">{week.notes}</span>}
+          </>
+        }
+        actions={
+          canManage && (
+            <CopyWeekForwardButton
+              weekId={weekId}
+              groupId={groupId}
+              cycleId={cycleId}
+              weekNumber={week.week_number}
+            />
+          )
+        }
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {DAY_LABELS.map((label, dow) => (
@@ -83,6 +102,7 @@ export default async function WeekDaysPage({
             label={label}
             day={daysByDow.get(dow) ?? null}
             canManage={canManage}
+            isToday={isViewingCurrentWeek && dow === todayDow}
           />
         ))}
       </div>

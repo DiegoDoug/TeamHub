@@ -91,12 +91,21 @@ export async function addMemberByEmail(
   return null;
 }
 
-export async function addAthleteToGroup(eventGroupId: string, profileId: string) {
+export async function addAthletesToGroup(eventGroupId: string, profileIds: string[]) {
+  if (profileIds.length === 0) return;
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("event_group_members")
-    .insert({ event_group_id: eventGroupId, profile_id: profileId });
-  if (error && error.code !== "23505") throw new Error(error.message);
+  // upsert + ignoreDuplicates so one already-a-member row doesn't fail the
+  // whole batch: a plain multi-row insert is atomic, so a single unique
+  // (event_group_id, profile_id) conflict would silently drop every athlete
+  // in the batch, not just the one that collided.
+  const { error } = await supabase.from("event_group_members").upsert(
+    profileIds.map((profileId) => ({
+      event_group_id: eventGroupId,
+      profile_id: profileId,
+    })),
+    { onConflict: "event_group_id,profile_id", ignoreDuplicates: true },
+  );
+  if (error) throw new Error(error.message);
   revalidatePath("/team/roster");
 }
 

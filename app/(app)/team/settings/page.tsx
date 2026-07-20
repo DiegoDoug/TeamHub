@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentTeam } from "@/lib/current-team";
 import { TeamNameForm } from "@/components/team-settings/team-name-form";
+import { PageHeader } from "@/components/shared/page-header";
 import {
   Card,
   CardContent,
@@ -16,7 +17,7 @@ export default async function TeamSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Team Settings</h1>
+      <PageHeader className="mb-0" title="Team Settings" />
       <Card>
         <CardHeader>
           <CardTitle>Team details</CardTitle>

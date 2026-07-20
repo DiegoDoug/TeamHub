@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { ProfileView, type ProfileDisplay } from "@/components/profile/profile-view";
+import { RecentWorkouts } from "@/components/profile/recent-workouts";
+import { getRecentWorkoutsForProfile } from "@/lib/queries/profile";
 import type { PrEntry } from "@/lib/validation/profile";
 
 export default async function ProfilePage({
@@ -14,13 +16,14 @@ export default async function ProfilePage({
 
   const [{ data: profileRow }, {
     data: { user },
-  }] = await Promise.all([
+  }, workouts] = await Promise.all([
     supabase
       .from("profiles")
       .select("id, full_name, email, primary_events, prs")
       .eq("id", profileId)
       .maybeSingle(),
     supabase.auth.getUser(),
+    getRecentWorkoutsForProfile(profileId),
   ]);
 
   // RLS returns zero rows if the viewer doesn't share a team with this
@@ -38,12 +41,13 @@ export default async function ProfilePage({
   const isOwnProfile = user?.id === profileId;
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl space-y-6">
       {isOwnProfile ? (
         <ProfileForm profile={profile} />
       ) : (
         <ProfileView profile={profile} />
       )}
+      <RecentWorkouts workouts={workouts} />
     </div>
   );
 }

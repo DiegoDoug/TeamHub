@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { CreateTeamForm } from "@/components/onboarding/create-team-form";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { AuthShell } from "@/components/layout/auth-shell";
 import {
   Card,
   CardContent,
@@ -33,7 +34,7 @@ export default async function OnboardingPage() {
   }
 
   return (
-    <div className="flex min-h-svh items-center justify-center p-6">
+    <AuthShell>
       <Card className="w-full max-w-md">
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
@@ -68,6 +69,6 @@ export default async function OnboardingPage() {
           </Tabs>
         </CardContent>
       </Card>
-    </div>
+    </AuthShell>
   );
 }

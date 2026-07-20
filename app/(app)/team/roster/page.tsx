@@ -4,6 +4,8 @@ import { CreateGroupDialog } from "@/components/roster/create-group-dialog";
 import { AddMemberDialog } from "@/components/roster/add-member-dialog";
 import { GroupCard } from "@/components/roster/group-card";
 import { MemberRow } from "@/components/roster/member-row";
+import { PageHeader } from "@/components/shared/page-header";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -65,26 +67,29 @@ export default async function RosterPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Roster</h1>
-          <p className="text-sm text-muted-foreground">{team.teamName}</p>
-        </div>
-        {isHeadCoach && (
-          <div className="flex gap-2">
-            <AddMemberDialog />
-            <CreateGroupDialog eventCoachOptions={eventCoachOptions} />
-          </div>
-        )}
-      </div>
+      <PageHeader
+        className="mb-0"
+        title="Roster"
+        description={team.teamName}
+        actions={
+          isHeadCoach && (
+            <>
+              <AddMemberDialog />
+              <CreateGroupDialog eventCoachOptions={eventCoachOptions} />
+            </>
+          )
+        }
+      />
 
       <div className="space-y-4">
         <h2 className="text-lg font-medium">Event groups</h2>
         {groups.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            No event groups yet.
-            {isHeadCoach && " Create one to start organizing athletes."}
-          </p>
+          <EmptyState
+            title="No event groups yet."
+            description={
+              isHeadCoach ? "Create one to start organizing athletes." : undefined
+            }
+          />
         )}
         <div className="grid gap-4 md:grid-cols-2">
           {groups.map((group) => {

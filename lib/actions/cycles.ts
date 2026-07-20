@@ -184,6 +184,72 @@ export async function deleteWeek(
   return null;
 }
 
+export type CopyWeekForwardResult =
+  | { error: string }
+  | { weekId: string; weekNumber: number };
+
+// Duplicates every planned day (warmup/drills/main_work/cooldown/notes) from
+// `weekId` into a brand-new week at week_number + 1 in the same cycle —
+// lets a coach reuse a week's plan instead of re-filling all 7 day dialogs.
+export async function copyWeekForward(
+  weekId: string,
+  groupId: string,
+  cycleId: string,
+): Promise<CopyWeekForwardResult> {
+  const supabase = await createClient();
+
+  // Scope the source-week lookup to the caller-supplied cycleId so a week
+  // from a different cycle/group can't be copied into this one — RLS only
+  // checks the caller coaches the *target* cycleId's group, not that it
+  // matches weekId's real cycle.
+  const [{ data: sourceWeek }, { data: sourceDays }] = await Promise.all([
+    supabase
+      .from("training_weeks")
+      .select("week_number")
+      .eq("id", weekId)
+      .eq("cycle_id", cycleId)
+      .maybeSingle(),
+    supabase
+      .from("training_days")
+      .select("day_of_week, warmup, drills, main_work, cooldown, notes")
+      .eq("week_id", weekId),
+  ]);
+  if (!sourceWeek) return { error: "Week not found." };
+
+  const newWeekNumber = sourceWeek.week_number + 1;
+
+  const { data: newWeek, error: weekError } = await supabase
+    .from("training_weeks")
+    .insert({ cycle_id: cycleId, week_number: newWeekNumber })
+    .select("id, week_number")
+    .single();
+  if (weekError) {
+    if (weekError.code === "23505") {
+      return { error: `Week ${newWeekNumber} already exists in this cycle.` };
+    }
+    return { error: friendlyError(weekError) };
+  }
+
+  if (sourceDays && sourceDays.length > 0) {
+    const { error: daysError } = await supabase.from("training_days").insert(
+      sourceDays.map((d) => ({
+        week_id: newWeek.id,
+        day_of_week: d.day_of_week,
+        warmup: d.warmup,
+        drills: d.drills,
+        main_work: d.main_work,
+        cooldown: d.cooldown,
+        notes: d.notes,
+      })),
+    );
+    if (daysError) return { error: friendlyError(daysError) };
+  }
+
+  revalidatePath(`/groups/${groupId}/cycles/${cycleId}`);
+  revalidatePath(`/groups/${groupId}/cycles/${cycleId}/weeks/${newWeek.id}`);
+  return { weekId: newWeek.id, weekNumber: newWeek.week_number };
+}
+
 // ---------------------------------------------------------------------
 // Days — a day slot is fixed by (week_id, day_of_week), which has a unique
 // constraint, so "add" and "edit" are both just an upsert on that key.

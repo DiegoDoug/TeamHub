@@ -7,6 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { CycleFormDialog } from "@/components/cycles/cycle-form-dialog";
 import { DeleteButton } from "@/components/cycles/delete-button";
 import { deleteCycle } from "@/lib/actions/cycles";
+import { PageHeader } from "@/components/shared/page-header";
+import { EmptyState } from "@/components/shared/empty-state";
+import { getCurrentWeekForGroup } from "@/lib/queries/cycles";
+import { CalendarClockIcon } from "lucide-react";
 
 function formatRange(start: string | null, end: string | null) {
   if (!start && !end) return "No dates set";
@@ -26,7 +30,7 @@ export default async function CyclesPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: group }, team, { data: cycles }] = await Promise.all([
+  const [{ data: group }, team, { data: cycles }, currentWeek] = await Promise.all([
     supabase
       .from("event_groups")
       .select("id, name, event_coach_id")
@@ -38,6 +42,7 @@ export default async function CyclesPage({
       .select("id, name, start_date, end_date, phase")
       .eq("event_group_id", groupId)
       .order("start_date", { ascending: true, nullsFirst: false }),
+    getCurrentWeekForGroup(groupId),
   ]);
 
   // RLS returns no row if the caller can't see this group at all (wrong
@@ -51,29 +56,38 @@ export default async function CyclesPage({
 
   return (
     <div className="space-y-6">
-      <Link
-        href="/dashboard"
-        className="text-sm text-muted-foreground underline underline-offset-4"
-      >
-        ← Back to dashboard
-      </Link>
+      <PageHeader
+        breadcrumb={[{ label: "Dashboard", href: "/dashboard" }, { label: group.name }]}
+        title={group.name}
+        description="Training cycles"
+        actions={canManage && <CycleFormDialog groupId={groupId} mode="create" />}
+      />
 
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{group.name}</h1>
-          <p className="text-sm text-muted-foreground">Training cycles</p>
-        </div>
-        {canManage && <CycleFormDialog groupId={groupId} mode="create" />}
-      </div>
+      {currentWeek && (
+        <Link
+          href={`/groups/${groupId}/cycles/${currentWeek.cycleId}/weeks/${currentWeek.weekId}`}
+          className="flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/5 px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/10"
+        >
+          <CalendarClockIcon className="size-4" />
+          This week: {currentWeek.cycleName} — Week {currentWeek.weekNumber}
+          <span className="ml-auto">→</span>
+        </Link>
+      )}
 
       {(cycles ?? []).length === 0 && (
-        <p className="text-sm text-muted-foreground">No training cycles yet.</p>
+        <EmptyState
+          title="No training cycles yet."
+          description={canManage ? "Create one to start planning workouts." : undefined}
+        />
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {(cycles ?? []).map((cycle) => (
           <Card key={cycle.id}>
-            <Link href={`/groups/${groupId}/cycles/${cycle.id}`} className="block">
+            <Link
+              href={`/groups/${groupId}/cycles/${cycle.id}`}
+              className="block rounded-t-xl transition-colors hover:bg-muted/50"
+            >
               <CardHeader>
                 <CardTitle className="flex items-center justify-between gap-2">
                   <span>{cycle.name}</span>
@@ -83,7 +97,7 @@ export default async function CyclesPage({
               </CardHeader>
             </Link>
             {canManage && (
-              <CardFooter className="justify-end gap-1">
+              <CardFooter className="justify-end gap-2">
                 <CycleFormDialog groupId={groupId} mode="edit" cycle={cycle} />
                 <DeleteButton
                   action={deleteCycle.bind(null, cycle.id, groupId)}

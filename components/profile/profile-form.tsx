@@ -1,6 +1,12 @@
 "use client";
 
-import { useActionState, useEffect, useId, useState } from "react";
+import {
+  startTransition,
+  useActionState,
+  useEffect,
+  useId,
+  useState,
+} from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -59,10 +65,13 @@ export function ProfileForm({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    formAction({
+    const payload = {
       full_name: fullName,
       primary_events: primaryEvents,
       prs: prs.filter((row) => !isBlankRow(row)),
+    };
+    startTransition(() => {
+      formAction(payload);
     });
   }
 
