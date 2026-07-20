@@ -61,7 +61,9 @@ export default async function WeekDaysPage({
   // date, so without this check every week (past or future) would show a
   // "Today" badge on whichever slot matches today's weekday.
   const isViewingCurrentWeek = currentWeek?.weekId === weekId;
-  const todayDow = (new Date().getDay() + 6) % 7; // JS Sun=0..Sat=6 -> Mon=0..Sun=6
+  // UTC, not local time: the server process's local timezone shouldn't
+  // affect which day "today" is (see lib/queries/logs.ts for the same fix).
+  const todayDow = (new Date().getUTCDay() + 6) % 7; // JS Sun=0..Sat=6 -> Mon=0..Sun=6
 
   return (
     <div className="space-y-6">

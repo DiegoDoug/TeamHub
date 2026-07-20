@@ -28,7 +28,10 @@ test("athlete sees today's assigned workout and logs it", async ({ page, request
     method: "POST",
     data: { cycle_id: cycle.id, week_number: 1 },
   });
-  const todayDow = (new Date().getDay() + 6) % 7; // Mon=0..Sun=6
+  // Must match lib/queries/logs.ts: the app computes "today" in UTC
+  // (independent of the server process's local timezone), so the test
+  // has to derive todayDow the same way rather than from local time.
+  const todayDow = (new Date().getUTCDay() + 6) % 7; // Mon=0..Sun=6
   await apiRest(request, headCoach, "training_days", {
     method: "POST",
     data: {
