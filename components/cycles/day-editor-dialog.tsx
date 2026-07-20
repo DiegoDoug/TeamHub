@@ -82,7 +82,12 @@ export function DayEditorDialog({
     >
       <DialogTrigger
         render={
-          <Button type="button" variant={day ? "outline" : "secondary"} size="sm">
+          <Button
+            type="button"
+            data-slot="dialog-trigger"
+            variant={day ? "outline" : "secondary"}
+            size="sm"
+          >
             {day ? <PencilIcon /> : <PlusIcon />}
             {day ? "Edit" : "Add"}
           </Button>

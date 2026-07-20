@@ -34,7 +34,11 @@ export function LogWorkoutDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant={triggerVariant} size="sm" />}>
+      <DialogTrigger
+        render={
+          <Button data-slot="dialog-trigger" variant={triggerVariant} size="sm" />
+        }
+      >
         {triggerLabel}
       </DialogTrigger>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">

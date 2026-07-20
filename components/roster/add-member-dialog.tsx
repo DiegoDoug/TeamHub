@@ -44,7 +44,13 @@ export function AddMemberDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline">Add member</Button>} />
+      <DialogTrigger
+        render={
+          <Button data-slot="dialog-trigger" variant="outline">
+            Add member
+          </Button>
+        }
+      />
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>Add a team member</DialogTitle>
@@ -78,7 +84,15 @@ export function AddMemberDialog() {
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>
+            <DialogClose
+              render={
+                <Button
+                  type="button"
+                  data-slot="dialog-close"
+                  variant="outline"
+                />
+              }
+            >
               Cancel
             </DialogClose>
             <Button type="submit" disabled={pending}>

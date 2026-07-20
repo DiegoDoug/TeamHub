@@ -96,6 +96,7 @@ export function EventList({
                       trigger={
                         <Button
                           type="button"
+                          data-slot="dialog-trigger"
                           variant="ghost"
                           size="icon-sm"
                           aria-label={`Edit ${event.title}`}
