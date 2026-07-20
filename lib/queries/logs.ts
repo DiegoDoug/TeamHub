@@ -26,7 +26,10 @@ export async function getTodaysAssignedWorkouts(
   const supabase = await createClient();
   const now = new Date();
   const todayIso = now.toISOString().slice(0, 10);
-  const todayDow = (now.getDay() + 6) % 7; // JS Sun=0..Sat=6 -> Mon=0..Sun=6
+  // UTC, not local time: the server process's local timezone shouldn't
+  // affect which day "today" is, and this must line up with todayIso above
+  // (also UTC-derived, via toISOString).
+  const todayDow = (now.getUTCDay() + 6) % 7; // JS Sun=0..Sat=6 -> Mon=0..Sun=6
 
   const { data: memberships } = await supabase
     .from("event_group_members")
