@@ -271,6 +271,11 @@ services:
       # over NEXT_PUBLIC_SUPABASE_URL when it's set.
       SUPABASE_URL: http://kong:8000
       SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      # Server-side only — used by the roster-URL import feature
+      # (lib/actions/roster-import.ts) to extract structured roster data
+      # from a fetched athletics roster page via DeepSeek's OpenAI-compatible
+      # API. Never exposed to the client.
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
       NODE_ENV: production
 
 volumes:

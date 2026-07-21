@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { CreateTeamForm } from "@/components/onboarding/create-team-form";
+import { JoinTeamForm } from "@/components/onboarding/join-team-form";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { AuthShell } from "@/components/layout/auth-shell";
 import {
@@ -60,11 +61,8 @@ export default async function OnboardingPage() {
             <TabsContent value="create" className="pt-4">
               <CreateTeamForm />
             </TabsContent>
-            <TabsContent value="join" className="pt-4 space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Ask your head coach to add <strong>{user.email}</strong> to
-                your team&apos;s roster. Once they do, refresh this page.
-              </p>
+            <TabsContent value="join" className="pt-4">
+              <JoinTeamForm fallbackEmail={user.email ?? ""} />
             </TabsContent>
           </Tabs>
         </CardContent>

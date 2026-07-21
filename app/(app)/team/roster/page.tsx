@@ -2,8 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentTeam } from "@/lib/current-team";
 import { CreateGroupDialog } from "@/components/roster/create-group-dialog";
 import { AddMemberDialog } from "@/components/roster/add-member-dialog";
+import { ImportRosterDialog } from "@/components/roster/import-roster-dialog";
 import { GroupCard } from "@/components/roster/group-card";
 import { MemberRow } from "@/components/roster/member-row";
+import { PendingMemberRow } from "@/components/roster/pending-member-row";
+import { JoinCodeCard } from "@/components/roster/join-code-card";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,18 +27,25 @@ export default async function RosterPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: teamMembers }, { data: eventGroups }] = await Promise.all([
-    supabase
-      .from("team_members")
-      .select("id, role, profile_id, profiles(id, full_name, email)")
-      .eq("team_id", team.teamId)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("event_groups")
-      .select("id, name, event_coach_id")
-      .eq("team_id", team.teamId)
-      .order("created_at", { ascending: true }),
-  ]);
+  const [{ data: teamMembers }, { data: eventGroups }, { data: pendingRaw }] =
+    await Promise.all([
+      supabase
+        .from("team_members")
+        .select("id, role, profile_id, profiles(id, full_name, email)")
+        .eq("team_id", team.teamId)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("event_groups")
+        .select("id, name, event_coach_id")
+        .eq("team_id", team.teamId)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("pending_roster_members")
+        .select("id, full_name, role, source, event_groups(name)")
+        .eq("team_id", team.teamId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: true }),
+    ]);
 
   const members = (teamMembers ?? []) as unknown as {
     id: string;
@@ -44,6 +54,13 @@ export default async function RosterPage() {
     profiles: { id: string; full_name: string; email: string } | null;
   }[];
   const groups = eventGroups ?? [];
+  const pendingMembers = (pendingRaw ?? []) as unknown as {
+    id: string;
+    full_name: string;
+    role: "athlete" | "event_coach";
+    source: string;
+    event_groups: { name: string } | null;
+  }[];
 
   const groupIds = groups.map((g) => g.id);
   const { data: groupMembersRaw } =
@@ -75,11 +92,53 @@ export default async function RosterPage() {
           isHeadCoach && (
             <>
               <AddMemberDialog />
+              <ImportRosterDialog eventGroupNames={groups.map((g) => g.name)} />
               <CreateGroupDialog eventCoachOptions={eventCoachOptions} />
             </>
           )
         }
       />
+
+      {isHeadCoach && <JoinCodeCard initialCode={team.joinCode} />}
+
+      {isHeadCoach && pendingMembers.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-medium">Pending roster</h2>
+          <Card>
+            <CardHeader>
+              <CardTitle>Not yet claimed</CardTitle>
+              <CardDescription>
+                {`${pendingMembers.length} people imported but not yet linked to an account. They'll appear here until they sign up and claim their name with the join code above, or you resolve them by email.`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Group</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Source</TableHead>
+                    <TableHead />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pendingMembers.map((p) => (
+                    <PendingMemberRow
+                      key={p.id}
+                      pendingId={p.id}
+                      fullName={p.full_name}
+                      groupName={p.event_groups?.name ?? null}
+                      role={p.role}
+                      source={p.source}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <div className="space-y-4">
         <h2 className="text-lg font-medium">Event groups</h2>
