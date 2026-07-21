@@ -232,6 +232,74 @@ export type Database = {
           },
         ]
       }
+      pending_roster_members: {
+        Row: {
+          claimed_profile_id: string | null
+          created_at: string
+          created_by: string | null
+          event_group_id: string | null
+          full_name: string
+          id: string
+          role: string
+          source: string
+          status: string
+          team_id: string
+        }
+        Insert: {
+          claimed_profile_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          event_group_id?: string | null
+          full_name: string
+          id?: string
+          role?: string
+          source: string
+          status?: string
+          team_id: string
+        }
+        Update: {
+          claimed_profile_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          event_group_id?: string | null
+          full_name?: string
+          id?: string
+          role?: string
+          source?: string
+          status?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_roster_members_claimed_profile_id_fkey"
+            columns: ["claimed_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_roster_members_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_roster_members_event_group_id_fkey"
+            columns: ["event_group_id"]
+            isOneToOne: false
+            referencedRelation: "event_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_roster_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -303,18 +371,21 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          join_code: string | null
           name: string
         }
         Insert: {
           created_at?: string
           created_by?: string | null
           id?: string
+          join_code?: string | null
           name: string
         }
         Update: {
           created_at?: string
           created_by?: string | null
           id?: string
+          join_code?: string | null
           name?: string
         }
         Relationships: [
@@ -519,6 +590,20 @@ export type Database = {
       app_shares_team_with: { Args: { p_profile_id: string }; Returns: boolean }
       app_team_role: { Args: { p_team_id: string }; Returns: string }
       app_week_group_id: { Args: { p_week_id: string }; Returns: string }
+      claim_roster_slot: {
+        Args: { p_code: string; p_pending_id: string }
+        Returns: undefined
+      }
+      list_pending_roster_by_join_code: {
+        Args: { p_code: string }
+        Returns: {
+          event_group_name: string
+          full_name: string
+          pending_id: string
+          team_id: string
+          team_name: string
+        }[]
+      }
       lookup_profile_by_email: {
         Args: { p_email: string }
         Returns: {

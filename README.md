@@ -62,6 +62,11 @@ npm install
 npm run dev   # reads .env.local, points at the dockerized stack on :8000
 ```
 
+`.env.local` needs `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` (same
+values as `.env`, but pointed at `http://localhost:8000` instead of the
+Docker service name) plus, optionally, `DEEPSEEK_API_KEY` — see the roster
+import note in `.env.example` — for the roster-URL-import feature.
+
 ## Testing
 
 ```bash

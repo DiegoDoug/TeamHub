@@ -6,6 +6,7 @@ export type TeamRole = "head_coach" | "event_coach" | "athlete";
 export type CurrentTeam = {
   teamId: string;
   teamName: string;
+  joinCode: string | null;
   role: TeamRole;
 };
 
@@ -26,7 +27,7 @@ export async function getCurrentTeam(): Promise<CurrentTeam | null> {
   // created the team), handing every other member the head_coach's role.
   const { data } = await supabase
     .from("team_members")
-    .select("team_id, role, teams(name)")
+    .select("team_id, role, teams(name, join_code)")
     .eq("profile_id", user.id)
     .order("created_at", { ascending: true })
     .limit(1)
@@ -34,9 +35,15 @@ export async function getCurrentTeam(): Promise<CurrentTeam | null> {
 
   if (!data) return null;
 
+  const teamRow = data.teams as unknown as {
+    name: string;
+    join_code: string | null;
+  } | null;
+
   return {
     teamId: data.team_id,
-    teamName: (data.teams as unknown as { name: string } | null)?.name ?? "",
+    teamName: teamRow?.name ?? "",
+    joinCode: teamRow?.join_code ?? null,
     role: data.role as TeamRole,
   };
 }
